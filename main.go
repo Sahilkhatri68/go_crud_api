@@ -35,11 +35,19 @@ func createCar(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newCar)
 }
 
+// code to get all cars
+// Get all cars (GET /cars)
+func getCars(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(cars)
+}
+
 func main() {
 	router := mux.NewRouter()
 
 	// Routes for CRUD operations
 	router.HandleFunc("/cars", createCar).Methods("POST")
+	router.HandleFunc("/cars", getCars).Methods("GET")
 
 	// Start the server
 	fmt.Println("Server is running on port 8080...")
