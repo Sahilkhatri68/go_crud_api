@@ -70,6 +70,34 @@ func getCar(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(car)
 }
 
+// Update a car (PUT /cars/{id})
+func updateCar(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		http.Error(w, "Invalid car ID", http.StatusBadRequest)
+		return
+	}
+	car, index := getCarByID(id)
+	if car == nil {
+		http.Error(w, "Car not found", http.StatusNotFound)
+		return
+	}
+	var updatedCar Car
+	err = json.NewDecoder(r.Body).Decode(&updatedCar)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+	cars[index].Model = updatedCar.Model
+	cars[index].Brand = updatedCar.Brand
+	cars[index].Color = updatedCar.Color
+	cars[index].Price = updatedCar.Price
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(cars[index])
+}
+
 func main() {
 	router := mux.NewRouter()
 
@@ -77,6 +105,7 @@ func main() {
 	router.HandleFunc("/cars", createCar).Methods("POST")
 	router.HandleFunc("/cars", getCars).Methods("GET")
 	router.HandleFunc("/cars/{id}", getCar).Methods("GET")
+	router.HandleFunc("/cars/{id}", updateCar).Methods("PUT")
 
 	// Start the server
 	fmt.Println("Server is running on port 8080...")
