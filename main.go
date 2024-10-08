@@ -98,6 +98,23 @@ func updateCar(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cars[index])
 }
 
+// Delete a car (DELETE /cars/{id})
+func deleteCar(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		http.Error(w, "Invalid car ID", http.StatusBadRequest)
+		return
+	}
+	_, index := getCarByID(id)
+	if index == -1 {
+		http.Error(w, "Car not found", http.StatusNotFound)
+		return
+	}
+	cars = append(cars[:index], cars[index+1:]...)
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func main() {
 	router := mux.NewRouter()
 
@@ -106,6 +123,7 @@ func main() {
 	router.HandleFunc("/cars", getCars).Methods("GET")
 	router.HandleFunc("/cars/{id}", getCar).Methods("GET")
 	router.HandleFunc("/cars/{id}", updateCar).Methods("PUT")
+	router.HandleFunc("/cars/{id}", deleteCar).Methods("DELETE")
 
 	// Start the server
 	fmt.Println("Server is running on port 8080...")
